@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chat Retrô</title>
+<style>
+    @font-face {
+        font-family: 'VT220';
+        src: url('VT220.ttf') format('truetype'); /* Substituído pelo caminho real da fonte */
+    }
+
+    body {
+        background-color: #000; /* Fundo ainda mais escuro */
+        color: limegreen;
+        font-family: 'VT220', monospace; /* Usando VT220 como a fonte principal */
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Estilos CSS para a splash screen */
+    #splash-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999; /* Garante que a splash screen apareça sobre todos os outros elementos */
+    }
+
+    #splash-screen img {
+        max-width: 60%; /* Tornando a imagem um pouco menor */
+        max-height: 60%;
+        border-radius: 50%; /* Transformando a imagem em um círculo */
+        animation: shake 0.5s infinite alternate; /* Adicionando um efeito de tremor */
+    }
+
+    #system-info {
+        margin-top: 20px;
+        font-size: 18px;
+        text-align: center;
+    }
+    
+    @keyframes shake {
+        0% { transform: translateX(-3px); }
+        100% { transform: translateX(3px); }
+    }
+
+    /* Adicionado um estilo para ocultar a tela de chat inicialmente */
+    #chat-container {
+        margin-bottom: 60px; /* Adicionando margem na parte inferior para espaço do campo de entrada */
+    }
+
+    #message-input-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #000;
+        padding: 10px 20px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+    }
+
+    #message-input {
+        flex: 1;
+        padding: 8px;
+        font-family: 'VT220', monospace;
+        border: none;
+        background-color: #333;
+        color: limegreen;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+
+    #send-button {
+        padding: 8px 20px;
+        background-color: limegreen;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<div id="splash-screen">
+    <img src="verde.png" alt="Logo">
+    <div id="system-info">
+        <p>Loading system information...</p>
+        <p>Initializing components...</p>
+        <p>Establishing connections...</p>
+    </div>
+</div>
+<div id="chat-container"></div>
+<div id="message-input-container">
+    <input type="text" id="message-input" placeholder="Digite sua mensagem...">
+    <button id="send-button">Enviar</button>
+</div>
+<audio id="keyboard-sound" src="teclado.mp3"></audio>
+<script>
+    const splashScreen = document.getElementById('splash-screen');
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    const keyboardSound = document.getElementById('keyboard-sound');
+
+    // Recupera as mensagens armazenadas ao carregar a página
+    const storedMessages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+
+    setTimeout(() => {
+        showChat(); // Mostra o chat após 5 segundos
+        resetChatHistory();
+        showSystemInfo();
+    }, 5000);
+
+    function showChat() {
+        splashScreen.style.display = 'none'; // Oculta a tela de carregamento
+        chatContainer.style.display = 'block';
+    }
+
+    function resetChatHistory() {
+        localStorage.removeItem('chatMessages');
+    }
+
+    function showSystemInfo() {
+        const systemInfo = document.getElementById('system-info');
+        systemInfo.innerHTML = ''; // Limpa o conteúdo atual
+        // Adiciona as informações do sistema
+        const systemMessages = [
+            'Sistema: RetroChat v1.0',
+            'Bem-vindo ao RetroChat!',
+            'Conexões estabelecidas com sucesso!'
+        ];
+        systemMessages.forEach(message => {
+            const p = document.createElement('p');
+            p.textContent = message;
+            systemInfo.appendChild(p);
+        });
+    }
+
+    // Event listener para o botão de enviar
+    sendButton.addEventListener('click', () => {
+        sendMessage();
+    });
+
+    // Event listener para o botão Enter
+    messageInput.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Event listener para as teclas digitadas
+    messageInput.addEventListener('keydown', (event) => {
+        if (event.key.length === 1) {
+            keyboardSound.currentTime = 0;
+            keyboardSound.play();
+        }
+    });
+
+    // Função para enviar a mensagem
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message !== '') {
+            appendMessage(message);
+            messageInput.value = '';
+            storeMessage(message); // Armazena a mensagem enviada
+        }
+    }
+
+    // Função para anexar uma mensagem à caixa de chat
+    function appendMessage(message) {
+        const messageElement = document.createElement('p');
+        messageElement.textContent = message;
+        chatContainer.appendChild(messageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Função para armazenar a mensagem no localStorage
+    function storeMessage(message) {
+        const messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
+        messages.push(message);
+        localStorage.setItem('chatMessages', JSON.stringify(messages));
+    }
+</script>
+</body>
+</html>
